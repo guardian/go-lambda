@@ -7,6 +7,8 @@ import (
 	"log"
 	"os"
 	"strings"
+
+	"github.com/guardian/go-lambda/templates"
 )
 
 type Statement struct {
@@ -37,15 +39,19 @@ func main() {
 		subnets := readLine("Subnets (comma-separated list")
 		config.Subnets = strings.Split(subnets, ",")
 
-		fmt.Println("Almost done!")
-		fmt.Println("You can add AWS permissions in the lambda.conf file at the root of the project folder.")
-		fmt.Println("Your project is ready for coding! :)")
+		fmt.Println("Thanks! Writing project files...")
 
 		err := mkdir(config.Name)
 		check(err)
 
 		err = writeConfig(fmt.Sprintf("%s/lambda.conf", config.Name), config)
 		check(err)
+
+		err = writeFile(fmt.Sprintf("%s/main.go", config.Name), []byte(templates.Lambda))
+		check(err)
+
+		fmt.Println("Done! You're ready to code :)")
+
 	default:
 		fmt.Println("Unrecognised command! Exiting...")
 	}
@@ -74,5 +80,9 @@ func writeConfig(path string, config Config) error {
 		return err
 	}
 
-	return ioutil.WriteFile(path, s, 0644)
+	return writeFile(path, s)
+}
+
+func writeFile(path string, content []byte) error {
+	return ioutil.WriteFile(path, content, 0644)
 }
