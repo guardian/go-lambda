@@ -1,7 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
 	"strings"
 )
@@ -38,9 +41,19 @@ func main() {
 		fmt.Println("You can add AWS permissions in the lambda.conf file at the root of the project folder.")
 		fmt.Println("Your project is ready for coding! :)")
 
-		fmt.Println(config)
+		err := mkdir(config.Name)
+		check(err)
+
+		err = writeConfig(fmt.Sprintf("%s/lambda.conf", config.Name), config)
+		check(err)
 	default:
 		fmt.Println("Unrecognised command! Exiting...")
+	}
+}
+
+func check(err error) {
+	if err != nil {
+		log.Fatal(err.Error())
 	}
 }
 
@@ -49,4 +62,17 @@ func readLine(prompt string) string {
 	var input string
 	fmt.Scanln(&input)
 	return input
+}
+
+func mkdir(name string) error {
+	return os.Mkdir(name, os.ModePerm)
+}
+
+func writeConfig(path string, config Config) error {
+	s, err := json.MarshalIndent(config, "", "    ")
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(path, s, 0644)
 }
