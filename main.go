@@ -14,10 +14,19 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		log.Fatalf("Must provide command to run (new, build)")
+		log.Fatalf("Must provide command to run. See 'help' for more info.")
 	}
 
 	switch os.Args[1] {
+	case "help":
+		helpMessage := `
+go-lambda [cmd]
+  new           - builds the skeleton project
+  build         - generates RiffRaff artifact including cloudformation
+  create-lamdba - creates the lambda in AWS
+  help          - provides help information
+		`
+		log.Print(helpMessage)
 	case "new":
 		conf := config.Config{}
 

@@ -3,7 +3,7 @@
 
 *WIP - much of the functionality is not there yet.**
 
-    $ go install github.com/guardian/go-lambda
+    $ go install -i github.com/guardian/go-lambda
 
 (Though see 'Installing Go' below if you haven't already done so
 before running this command.)
