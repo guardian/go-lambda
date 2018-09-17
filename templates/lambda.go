@@ -2,6 +2,8 @@ package templates
 
 // Lambda template
 var Lambda = `
+package main
+
 import (
 	"context"
 	"log"
@@ -30,6 +32,14 @@ func handle(ctx context.Context, event events.CloudWatchEvent) error {
 }
 `
 
-func add(x int, y int) int {
-	return x + y
+var LambdaTest = `
+package main
+
+import (
+	"testing"
+)
+
+func TestExample(t *testing.T) {
+	t.Error("This test will fail.")	
 }
+`

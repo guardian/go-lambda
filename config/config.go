@@ -17,7 +17,7 @@ type Config struct {
 	Profile  string
 	VpcID    string
 	Subnets  []string
-	Policies []Statement
+	Policies []Statement `json:",omitempty"`
 }
 
 func (conf Config) ProjectName() string {

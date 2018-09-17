@@ -45,9 +45,12 @@ func main() {
 		err = writeFile(fmt.Sprintf("%s/main.go", conf.Name), []byte(templates.Lambda))
 		check(err)
 
+		err = writeFile(fmt.Sprintf("%s/main_test.go", conf.Name), []byte(templates.LambdaTest))
+		check(err)
+
 	case "build":
-		// A --publish flag (defaulting to false) controls writing
-		// artifact to S3.
+		fmt.Println("Warning: this command is currently buggy.")
+
 		conf, err := config.Read("lambda.conf")
 		check(err)
 
@@ -84,6 +87,7 @@ func main() {
 
 	case "create-lambda":
 		// TODO this will create the lamdba in AWS and update your lamdba.conf accordingly
+		fmt.Println("This command is not yet implemented sorry.")
 
 	default:
 		fmt.Println("Unrecognised command! Exiting...")
