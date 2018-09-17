@@ -29,3 +29,7 @@ func handle(ctx context.Context, event events.CloudWatchEvent) error {
 	return nil
 }
 `
+
+func add(x int, y int) int {
+	return x + y
+}

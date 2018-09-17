@@ -1,57 +1,62 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"strings"
 
+	"github.com/guardian/go-lambda/config"
 	"github.com/guardian/go-lambda/templates"
 )
-
-type Statement struct {
-	Effect   string
-	Action   []string
-	Resource string
-}
-
-type Config struct {
-	Name     string
-	VpcID    string
-	Subnets  []string
-	Policies []Statement
-}
 
 func main() {
 	switch os.Args[1] {
 	case "new":
-		fmt.Println("Making a new project...")
+		conf := config.Config{}
 
-		config := Config{}
 		name := readLine("Project name")
-		config.Name = name
+		conf.Name = name
+
+		profile := readLine("Janus profile")
+		conf.Profile = profile
 
 		vpcID := readLine("VPC ID")
-		config.VpcID = vpcID
+		conf.VpcID = vpcID
 
 		subnets := readLine("Subnets (comma-separated list")
-		config.Subnets = strings.Split(subnets, ",")
+		conf.Subnets = strings.Split(subnets, ",")
 
-		fmt.Println("Thanks! Writing project files...")
-
-		err := mkdir(config.Name)
+		err := mkdir(conf.Name)
 		check(err)
 
-		err = writeConfig(fmt.Sprintf("%s/lambda.conf", config.Name), config)
+		err = config.Write(fmt.Sprintf("%s/lambda.conf", conf.Name), conf)
 		check(err)
 
-		err = writeFile(fmt.Sprintf("%s/main.go", config.Name), []byte(templates.Lambda))
+		err = writeFile(fmt.Sprintf("%s/main.go", conf.Name), []byte(templates.Lambda))
 		check(err)
 
-		fmt.Println("Done! You're ready to code :)")
+	case "build":
+		// will build a deployable artifact, including (currently)
+		// - build binary
+		// - generate cloudformation
+		// - package in riffraff
 
+		// A --publish flag (defaulting to false) controls writing
+		// artifact to S3.
+
+		// test cloudformation by trying to validate it
+
+		// build binary
+		// "go build main.go"
+		conf, err := config.Read("lambda.conf")
+		check(err)
+
+		err = writeFile(fmt.Sprintf("%s/cfn.yaml", conf.Name), []byte(templates.Cfn))
+		check(err)
+
+		// package in riffraff
 	default:
 		fmt.Println("Unrecognised command! Exiting...")
 	}
@@ -72,15 +77,6 @@ func readLine(prompt string) string {
 
 func mkdir(name string) error {
 	return os.Mkdir(name, os.ModePerm)
-}
-
-func writeConfig(path string, config Config) error {
-	s, err := json.MarshalIndent(config, "", "    ")
-	if err != nil {
-		return err
-	}
-
-	return writeFile(path, s)
 }
 
 func writeFile(path string, content []byte) error {
