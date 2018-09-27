@@ -1,8 +1,6 @@
 package templates
 
 // Cfn - returns cloudformation for a lambda
-// TODO overrides
-// - custom policies
 var Cfn = `
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Golang Guardian lambda template
@@ -10,7 +8,6 @@ Description: Golang Guardian lambda template
 Parameters:
   Stage:
     Type: String
-    Default: PROD
   Vpc:
     Type: AWS::EC2::VPC::Id
   Subnets:
@@ -21,6 +18,8 @@ Parameters:
     Type: String
   Main:
     Type: String
+  ManagedPolicies:
+    Type: CommaDelimitedList
 
 Resources:
   Role:
@@ -28,6 +27,7 @@ Resources:
     Properties:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+        - !Ref ManagedPolicies
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
