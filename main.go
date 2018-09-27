@@ -6,8 +6,10 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
+	"github.com/guardian/go-lambda/aws"
 	"github.com/guardian/go-lambda/config"
 	"github.com/guardian/go-lambda/templates"
 )
@@ -22,7 +24,7 @@ func main() {
 		helpMessage := `
 go-lambda [cmd]
   new           - builds the skeleton project
-  build         - generates RiffRaff artifact including cloudformation
+  build         - generates and uploads RiffRaff artifact including cloudformation
   create-lamdba - creates the lambda in AWS
   help          - provides help information
 		`
@@ -79,6 +81,7 @@ go-lambda [cmd]
 		err = writeFile("target/cfn/cfn.yaml", []byte(templates.Cfn))
 		check(err)
 
+		// TODO what if dependencies not found?
 		err = exec.Command("go", "build", "-o", "target/lambda/lambda.go", "main.go").Run()
 		check(err) // TODO can include stderr here
 
@@ -86,13 +89,14 @@ go-lambda [cmd]
 		check(err)
 		err = writeFile("target/build.json", []byte(buildJSON))
 
-		// TODO use Go AWS SDK
-		// S3ProjectTarget := fmt.Sprintf("s3://riffraff-artifact/%s/1", conf.ProjectName())
-		// S3BuildTarget := fmt.Sprintf("s3://riffraff-builds/%s/1/build.json", conf.ProjectName())
-		// err = exec.Command("aws", "s3", "cp", "--profile", "deployTools", "--acl", "bucket-owner-full-control", "--region=eu-west-1", "--recursive", "target", S3ProjectTarget).Run()
-		// check(err)
-		// err = exec.Command("aws", "s3", "cp", "--profile", "deployTools", "--acl", "bucket-owner-full-control", "--region=eu-west-1", "--recursive", "target/build.json", S3BuildTarget).Run()
-		// check(err)
+		client, err := aws.GetClient()
+		check(err)
+
+		// TODO use build number here instead of 1
+		S3KeyPrefix := fmt.Sprintf("/%s/1/", conf.ProjectName())
+		paths := lsDir("target")
+		pathKeys := PathsToKeys(paths, S3KeyPrefix, "target/")
+		aws.UploadFiles(client, "riffraff-artifact", pathKeys)
 
 	case "create-lambda":
 		// TODO this will create the lamdba in AWS and update your lamdba.conf accordingly
@@ -126,4 +130,49 @@ func writeFile(path string, content []byte) error {
 
 func rmDir(path string) error {
 	return os.RemoveAll(path)
+}
+
+func isDirectory(path string) bool {
+	fd, err := os.Stat(path)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(2)
+	}
+	switch mode := fd.Mode(); {
+	case mode.IsDir():
+		return true
+	case mode.IsRegular():
+		return false
+	}
+	return false
+}
+
+func lsDir(path string) []string {
+	fileList := []string{}
+	filepath.Walk(path, func(path string, f os.FileInfo, err error) error {
+		if isDirectory(path) {
+			return nil
+		} else {
+			fileList = append(fileList, path)
+			return nil
+		}
+	})
+
+	return fileList
+}
+
+// Build map of file paths to S3 keys for Riffraff upload
+func PathsToKeys(
+	paths []string,
+	keyPrefix string,
+	stripPrefix string,
+) map[string]string {
+
+	m := map[string]string{}
+	for _, path := range paths {
+		key := keyPrefix + strings.TrimPrefix(path, stripPrefix)
+		m[path] = key
+	}
+
+	return m
 }
