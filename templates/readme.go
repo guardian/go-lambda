@@ -5,6 +5,14 @@ var Readme = `
 
 Simple skeleton for an AWS (Golang) lambda function.
 
+We are not yet using Go modules, so you'll want to go get the 
+dependencies before you start:
+
+	$ go get -u github.com/aws/aws-sdk-go/...
+	$ go get -u github.com/aws/aws-lambda-go/...
+
+You should then be good to go! (Pun intended.)
+
 ## Testing
 
 A simple main_test.go file has been provided, which you can run using:
