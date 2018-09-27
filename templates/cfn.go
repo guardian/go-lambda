@@ -1,8 +1,7 @@
 package templates
 
-// Lambda template
+// Cfn - returns cloudformation for a lambda
 // TODO overrides
-// - Bucket location
 // - custom policies
 var Cfn = `
 AWSTemplateFormatVersion: '2010-09-09'
