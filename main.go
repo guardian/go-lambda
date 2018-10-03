@@ -73,7 +73,6 @@ go-lambda [cmd]
 		err = mkdir("target/lambda")
 		check(err)
 
-		
 		rr, err := templates.RiffRaffConfig(conf)
 		check(err)
 		err = writeFile("target/riff-raff.yaml", []byte(rr))
@@ -102,6 +101,9 @@ go-lambda [cmd]
 	case "create-lambda":
 		// TODO this will create the lamdba in AWS and update your lamdba.conf accordingly
 		fmt.Println("This command is not yet implemented sorry.")
+
+	case "create-teamcity":
+		fmt.Println("This command is not implemented yet sorry.")
 
 	default:
 		fmt.Println("Unrecognised command! Exiting...")

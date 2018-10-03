@@ -10,9 +10,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
-func CreateLambda() {
-}
-
 func UploadFiles(
 	client *s3.S3,
 	bucket string,
