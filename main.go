@@ -73,6 +73,7 @@ go-lambda [cmd]
 		err = mkdir("target/lambda")
 		check(err)
 
+		
 		rr, err := templates.RiffRaffConfig(conf)
 		check(err)
 		err = writeFile("target/riff-raff.yaml", []byte(rr))

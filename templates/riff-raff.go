@@ -2,6 +2,7 @@ package templates
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"text/template"
 	"time"
@@ -18,29 +19,55 @@ deployments:
   cfn:
     type: cloud-formation
     parameters:
-      cloudFormationStackName: {{.Name}}
+      cloudFormationStackName: com-gu-{{.Profile}}-{{.Name}}
       templatePath: cfn.yaml
       cloudFormationStackByTags: false
+      templateParameters:
+        VPC: {{.VpcID}}
+        Bucket: {{.Bucket}}
+        Key: {{.Key}}
+        Main: {{.Main}}
+        Subnets: {{StringsJoin .Subnets ","}}
+        ManagedPolicies: {{StringsJoin .Policies ","}}
   lambda:
     type: aws-lambda
     parameters:
       functions:
         PROD:
-          name: frontend-dokr-PROD-DokrLambda-1F1WWBIGRY1LJ
+          name: {{.FunctionName}}
           filename: {{.Name}}.zip
       bucket: com-gu-{{.Profile}}-{{.Name}}
     dependencies:
     - cfn
 `
 
+type rRConfig struct {
+	config.Config
+	Key          string
+	Bucket       string
+	Main         string
+	FunctionName string
+}
+
 func RiffRaffConfig(conf config.Config) (string, error) {
-	tpl, err := template.New("rr").Parse(rr)
+	bucket := fmt.Sprintf("com-gu-%s-golambda", conf.Profile)
+	key := conf.Name + ".zip"
+
+	tpl, err := template.New("rr").Funcs(template.FuncMap{"StringsJoin": strings.Join}).Parse(rr)
 	if err != nil {
 		return "", err
 	}
 
+	rrConfig := rRConfig{
+		Config:       conf, // embedded
+		Key:          key,
+		Bucket:       bucket,
+		Main:         "main",
+		FunctionName: "TODO",
+	}
+
 	var buffer strings.Builder
-	err = tpl.Execute(&buffer, conf)
+	err = tpl.Execute(&buffer, rrConfig)
 	if err != nil {
 		return "", err
 	}
