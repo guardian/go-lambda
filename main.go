@@ -28,6 +28,11 @@ go-lambda [cmd]
 		`
 		log.Print(helpMessage)
 	case "new":
+		// TODO better to just use actual go package here stored in a separate
+		// github. It will be easier to test and iterate on.
+
+		// This tool should really be about bringing things together and the
+		// ops side.
 		conf := config.Config{}
 
 		name := readLine("Project name")
